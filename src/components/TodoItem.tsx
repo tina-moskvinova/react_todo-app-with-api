@@ -40,13 +40,15 @@ export const TodoItem: React.FC<Props> = ({
     const trimmed = newTitle.trim();
 
     if (!trimmed) {
-      onDelete?.(id);
       setIsEditing(false);
+      setNewTitle(title);
 
       return;
     }
 
     if (trimmed === title) {
+      setIsEditing(false);
+
       return;
     }
 
@@ -84,7 +86,14 @@ export const TodoItem: React.FC<Props> = ({
           type="text"
           value={newTitle}
           onChange={e => setNewTitle(e.target.value)}
-          // onBlur={() => setTimeout(handleSubmit, 0)}
+          onBlur={e => {
+            const related = e.relatedTarget;
+            const safe = related?.getAttribute('data-cy') === 'TodoDelete';
+
+            if (!safe) {
+              handleSubmit();
+            }
+          }}
           onKeyUp={handleKeyUp}
           autoFocus
         />
