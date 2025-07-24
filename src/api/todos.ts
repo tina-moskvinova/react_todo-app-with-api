@@ -19,8 +19,20 @@ export const deleteTodoFromServer = (todoId: number) => {
   return client.delete(`/todos/${todoId}`);
 };
 
-export const updateTodoStatus = (todoId: number, newStatus: boolean) => {
-  return client.patch(`/todos/${todoId}`, {
+export const updateTodoStatus = (
+  todoId: number,
+  newStatus: boolean,
+): Promise<Todo> => {
+  return client.patch<Todo>(`/todos/${todoId}`, {
     completed: newStatus,
+  });
+};
+
+export const updateTodoTitle = (
+  todoId: number,
+  newTitle: string,
+): Promise<Todo> => {
+  return client.patch<Todo>(`/todos/${todoId}`, {
+    title: newTitle,
   });
 };

@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React from 'react';
+import React, { useState } from 'react';
 import classNames from 'classnames';
 import { Todo } from '../types/Todo';
 
@@ -8,6 +8,7 @@ type Props = {
   onDelete?: (todoId: number) => void;
   isProcessed?: boolean;
   onStatusChange?: (todoId: number, newStatus: boolean) => void;
+  onTitleUpdate?: (todoId: number, newTitle: string) => void;
   isLoading?: boolean;
 };
 
@@ -16,9 +17,47 @@ export const TodoItem: React.FC<Props> = ({
   onDelete,
   isProcessed,
   onStatusChange,
+  onTitleUpdate,
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [newTitle, setNewTitle] = useState(title);
+
   const handleEdit = () => {
     onStatusChange?.(id, !completed);
+  };
+
+  const handleDoubleClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSubmit = () => {
+    const trimmed = newTitle.trim();
+
+    if (trimmed === title) {
+      setIsEditing(false);
+
+      return;
+    }
+
+    if (!trimmed) {
+      onDelete?.(id);
+
+      return;
+    }
+
+    onTitleUpdate?.(id, trimmed);
+    setIsEditing(false);
+  };
+
+  const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleSubmit();
+    }
+
+    if (event.key === 'Escape') {
+      setNewTitle(title);
+      setIsEditing(false);
+    }
   };
 
   return (
@@ -33,11 +72,27 @@ export const TodoItem: React.FC<Props> = ({
         />
       </label>
 
-      <span data-cy="TodoTitle" className="todo__title">
-        {title}
-      </span>
+      {isEditing ? (
+        <input
+          data-cy="TodoTitleField"
+          className="todo__title-field"
+          type="text"
+          value={newTitle}
+          onChange={e => setNewTitle(e.target.value)}
+          onBlur={handleSubmit}
+          onKeyUp={handleKeyUp}
+          autoFocus
+        />
+      ) : (
+        <span
+          data-cy="TodoTitle"
+          className="todo__title"
+          onDoubleClick={handleDoubleClick}
+        >
+          {title}
+        </span>
+      )}
 
-      {/* loader or delete button */}
       <div
         data-cy="TodoLoader"
         className={classNames('modal overlay', {

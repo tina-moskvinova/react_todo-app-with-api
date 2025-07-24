@@ -1,4 +1,6 @@
 import React, { useRef, useEffect } from 'react';
+import { Todo } from '../types/Todo';
+import classNames from 'classnames';
 
 type Props = {
   newTodoTitle: string;
@@ -6,6 +8,8 @@ type Props = {
   onAdd: (event: React.FormEvent) => Promise<void>;
   isAdding: boolean;
   todoCount: number;
+  todos: Todo[];
+  handleToggleAll: () => void;
 };
 
 export const Header: React.FC<Props> = ({
@@ -14,8 +18,11 @@ export const Header: React.FC<Props> = ({
   onAdd,
   isAdding,
   todoCount,
+  todos,
+  handleToggleAll,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const allCompleted = todos.length > 0 && todos.every(todo => todo.completed);
 
   useEffect(() => {
     if (!isAdding && inputRef.current) {
@@ -27,9 +34,10 @@ export const Header: React.FC<Props> = ({
     <header className="todoapp__header">
       <button
         type="button"
-        className="todoapp__toggle-all"
+        className={classNames('todoapp__toggle-all', { active: allCompleted })}
         data-cy="ToggleAllButton"
-        disabled
+        onClick={handleToggleAll}
+        disabled={todos.length === 0}
       />
 
       <form onSubmit={onAdd}>

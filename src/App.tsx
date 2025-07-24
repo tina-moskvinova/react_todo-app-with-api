@@ -12,6 +12,7 @@ import {
   deleteTodoFromServer,
   USER_ID,
   updateTodoStatus,
+  updateTodoTitle,
 } from './api/todos';
 import { Header } from './components/Header';
 import { TodoList } from './components/TodoList';
@@ -161,6 +162,68 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleToggleAll = async () => {
+    const newStatus = !todos.every(todo => todo.completed);
+    const todosToUpdate = todos.filter(todo => todo.completed !== newStatus);
+
+    if (todosToUpdate.length === 0) {
+      return;
+    }
+
+    const updatedIds = todosToUpdate.map(todo => todo.id);
+
+    setLoadingTodoIds(prev => [...prev, ...updatedIds]);
+
+    try {
+      const updatedPromises = todosToUpdate.map(todo =>
+        updateTodoStatus(todo.id, newStatus),
+      );
+      const updatedTodos = await Promise.all(updatedPromises);
+
+      setTodos(prev =>
+        prev.map(todo =>
+          updatedIds.includes(todo.id)
+            ? (updatedTodos.find(updated => updated.id === todo.id) ?? todo)
+            : todo,
+        ),
+      );
+    } catch {
+      setErrorMessage(ErrorMessage.UpdateTodo);
+    } finally {
+      setLoadingTodoIds(prev => prev.filter(id => !updatedIds.includes(id)));
+    }
+  };
+
+  const handleTitleUpdate = async (todoId: number, newTitle: string) => {
+    const trimmed = newTitle.trim();
+
+    if (!trimmed) {
+      handleDelete(todoId);
+
+      return;
+    }
+
+    if (todoId === 0 && tempTodo) {
+      setTempTodo({ ...tempTodo, title: trimmed });
+
+      return;
+    }
+
+    setLoadingTodoIds(prev => [...prev, todoId]);
+
+    try {
+      const updatedTodo = await updateTodoTitle(todoId, trimmed);
+
+      setTodos(prev =>
+        prev.map(todo => (todo.id === todoId ? updatedTodo : todo)),
+      );
+    } catch {
+      setErrorMessage(ErrorMessage.UpdateTodo);
+    } finally {
+      setLoadingTodoIds(prev => prev.filter(id => id !== todoId));
+    }
+  };
+
   if (!USER_ID) {
     return <UserWarning />;
   }
@@ -177,6 +240,8 @@ export const App: React.FC = () => {
           onAdd={handleAddTodo}
           isAdding={!!tempTodo}
           todoCount={todos.length}
+          todos={todos}
+          handleToggleAll={handleToggleAll}
         />
 
         {isLoading ? (
@@ -198,6 +263,7 @@ export const App: React.FC = () => {
                     isProcessed={true}
                     onDelete={handleDelete}
                     onStatusChange={handleStatusChange}
+                    onTitleUpdate={handleTitleUpdate}
                   />
                 )}
               </>
