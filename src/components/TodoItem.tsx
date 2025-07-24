@@ -28,6 +28,12 @@ export const TodoItem: React.FC<Props> = ({
     setNewTitle(title);
   }, [title]);
 
+  useEffect(() => {
+    if (!isProcessed && isEditing) {
+      setIsEditing(false);
+    }
+  }, [isProcessed, isEditing]);
+
   const handleEdit = () => {
     onStatusChange?.(id, !completed);
   };
@@ -40,8 +46,8 @@ export const TodoItem: React.FC<Props> = ({
     const trimmed = newTitle.trim();
 
     if (!trimmed) {
+      onDelete?.(id);
       setIsEditing(false);
-      setNewTitle(title);
 
       return;
     }
@@ -62,8 +68,8 @@ export const TodoItem: React.FC<Props> = ({
     }
 
     if (event.key === 'Escape') {
-      setIsEditing(false);
       setNewTitle(title);
+      setIsEditing(false);
     }
   };
 
@@ -86,13 +92,15 @@ export const TodoItem: React.FC<Props> = ({
           type="text"
           value={newTitle}
           onChange={e => setNewTitle(e.target.value)}
-          onBlur={e => {
-            const related = e.relatedTarget;
-            const safe = related?.getAttribute('data-cy') === 'TodoDelete';
+          onBlur={() => {
+            const trimmed = newTitle.trim();
 
-            if (!safe) {
-              handleSubmit();
+            if (trimmed && trimmed !== title) {
+              onTitleUpdate?.(id, trimmed);
             }
+
+            setNewTitle(title);
+            setIsEditing(false);
           }}
           onKeyUp={handleKeyUp}
           autoFocus
