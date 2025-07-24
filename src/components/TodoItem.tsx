@@ -10,6 +10,7 @@ type Props = {
   onStatusChange?: (todoId: number, newStatus: boolean) => void;
   onTitleUpdate?: (todoId: number, newTitle: string) => void;
   isLoading?: boolean;
+  isTemp?: boolean;
 };
 
 export const TodoItem: React.FC<Props> = ({
@@ -18,6 +19,7 @@ export const TodoItem: React.FC<Props> = ({
   isProcessed,
   onStatusChange,
   onTitleUpdate,
+  isTemp,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
@@ -103,7 +105,7 @@ export const TodoItem: React.FC<Props> = ({
         <div className="loader" />
       </div>
 
-      {!isProcessed && id !== 0 && (
+      {!isTemp && !isProcessed && (
         <button
           type="button"
           className="todo__remove"

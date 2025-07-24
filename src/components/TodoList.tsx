@@ -8,6 +8,7 @@ type Props = {
   loadingTodoIds: number[];
   onStatusChange: (todoId: number, newStatus: boolean) => void;
   onTitleUpdate?: (todoId: number, newTitle: string) => void;
+  isTemp?: boolean;
 };
 
 export const TodoList: React.FC<Props> = ({
@@ -31,6 +32,7 @@ export const TodoList: React.FC<Props> = ({
           isProcessed={loadingTodoIds.includes(todo.id)}
           onStatusChange={onStatusChange}
           onTitleUpdate={onTitleUpdate}
+          isTemp={false}
         />
       ))}
     </section>

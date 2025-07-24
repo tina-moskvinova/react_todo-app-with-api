@@ -265,6 +265,7 @@ export const App: React.FC = () => {
                     onDelete={handleDelete}
                     onStatusChange={handleStatusChange}
                     onTitleUpdate={handleTitleUpdate}
+                    isTemp={true}
                   />
                 )}
               </>
