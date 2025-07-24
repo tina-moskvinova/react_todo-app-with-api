@@ -86,6 +86,10 @@ export const App: React.FC = () => {
       return;
     }
 
+    if (isLoading) {
+      return;
+    }
+
     const temp = {
       id: 0,
       userId: USER_ID,
@@ -195,6 +199,8 @@ export const App: React.FC = () => {
   };
 
   const handleTitleUpdate = async (todoId: number, newTitle: string) => {
+    // eslint-disable-next-line no-console
+    console.log('🧠 handleTitleUpdate called', todoId, newTitle);
     const trimmed = newTitle.trim();
 
     if (!trimmed) {
@@ -256,9 +262,10 @@ export const App: React.FC = () => {
                   onDelete={handleDelete}
                   loadingTodoIds={loadingTodoIds}
                   onStatusChange={handleStatusChange}
+                  onTitleUpdate={handleTitleUpdate}
                 />
 
-                {tempTodo && (
+                {!isLoading && tempTodo && (
                   <TodoItem
                     todo={tempTodo}
                     isProcessed={true}

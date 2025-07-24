@@ -105,7 +105,7 @@ export const TodoItem: React.FC<Props> = ({
         <div className="loader" />
       </div>
 
-      {!isTemp && !isProcessed && (
+      {!isTemp && !isProcessed && !isEditing && (
         <button
           type="button"
           className="todo__remove"
