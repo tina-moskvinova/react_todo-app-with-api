@@ -7,6 +7,7 @@ type Props = {
   setNewTodoTitle: React.Dispatch<React.SetStateAction<string>>;
   onAdd: (event: React.FormEvent) => Promise<void>;
   isAdding: boolean;
+  isLoading: boolean;
   todoCount: number;
   todos: Todo[];
   handleToggleAll: () => void;
@@ -17,6 +18,7 @@ export const Header: React.FC<Props> = ({
   setNewTodoTitle,
   onAdd,
   isAdding,
+  isLoading,
   todoCount,
   todos,
   handleToggleAll,
@@ -32,13 +34,17 @@ export const Header: React.FC<Props> = ({
 
   return (
     <header className="todoapp__header">
-      <button
-        type="button"
-        className={classNames('todoapp__toggle-all', { active: allCompleted })}
-        data-cy="ToggleAllButton"
-        onClick={handleToggleAll}
-        disabled={todos.length === 0}
-      />
+      {!isLoading && (
+        <button
+          type="button"
+          className={classNames('todoapp__toggle-all', {
+            active: allCompleted,
+          })}
+          data-cy="ToggleAllButton"
+          onClick={handleToggleAll}
+          disabled={todos.length === 0}
+        />
+      )}
 
       <form onSubmit={onAdd}>
         <input

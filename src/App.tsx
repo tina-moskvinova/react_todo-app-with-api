@@ -234,15 +234,18 @@ export const App: React.FC = () => {
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
       <div className="todoapp__content">
-        <Header
-          newTodoTitle={newTodoTitle}
-          setNewTodoTitle={setNewTodoTitle}
-          onAdd={handleAddTodo}
-          isAdding={!!tempTodo}
-          todoCount={todos.length}
-          todos={todos}
-          handleToggleAll={handleToggleAll}
-        />
+        {!isLoading && (
+          <Header
+            newTodoTitle={newTodoTitle}
+            setNewTodoTitle={setNewTodoTitle}
+            onAdd={handleAddTodo}
+            isLoading={isLoading}
+            isAdding={!!tempTodo}
+            todoCount={todos.length}
+            todos={todos}
+            handleToggleAll={handleToggleAll}
+          />
+        )}
 
         {isLoading ? (
           <div className="loader" data-cy="Loader" />
