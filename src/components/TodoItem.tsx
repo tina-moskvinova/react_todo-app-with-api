@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { Todo } from '../types/Todo';
 
@@ -24,6 +24,10 @@ export const TodoItem: React.FC<Props> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
 
+  useEffect(() => {
+    setNewTitle(title);
+  }, [title]);
+
   const handleEdit = () => {
     onStatusChange?.(id, !completed);
   };
@@ -35,15 +39,14 @@ export const TodoItem: React.FC<Props> = ({
   const handleSubmit = () => {
     const trimmed = newTitle.trim();
 
-    if (trimmed === title) {
+    if (!trimmed) {
+      onDelete?.(id);
       setIsEditing(false);
 
       return;
     }
 
-    if (!trimmed) {
-      onDelete?.(id);
-
+    if (trimmed === title) {
       return;
     }
 
@@ -57,8 +60,8 @@ export const TodoItem: React.FC<Props> = ({
     }
 
     if (event.key === 'Escape') {
-      setNewTitle(title);
       setIsEditing(false);
+      setNewTitle(title);
     }
   };
 
@@ -81,7 +84,7 @@ export const TodoItem: React.FC<Props> = ({
           type="text"
           value={newTitle}
           onChange={e => setNewTitle(e.target.value)}
-          onBlur={handleSubmit}
+          // onBlur={() => setTimeout(handleSubmit, 0)}
           onKeyUp={handleKeyUp}
           autoFocus
         />

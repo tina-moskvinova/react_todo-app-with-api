@@ -199,8 +199,6 @@ export const App: React.FC = () => {
   };
 
   const handleTitleUpdate = async (todoId: number, newTitle: string) => {
-    // eslint-disable-next-line no-console
-    console.log('🧠 handleTitleUpdate called', todoId, newTitle);
     const trimmed = newTitle.trim();
 
     if (!trimmed) {
