@@ -31,7 +31,7 @@ export const TodoList: React.FC<Props> = ({
           onDelete={onDelete}
           isProcessed={loadingTodoIds.includes(todo.id)}
           onStatusChange={onStatusChange}
-          onTitleUpdate={onTitleUpdate}
+          renameCallback={onTitleUpdate}
           isTemp={false}
         />
       ))}

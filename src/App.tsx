@@ -218,6 +218,8 @@ export const App: React.FC = () => {
     try {
       const updatedTodo = await updateTodoTitle(todoId, trimmed);
 
+      renameCallback?.(todoId, trimmed);
+
       setTodos(prev =>
         prev.map(todo => (todo.id === todoId ? updatedTodo : todo)),
       );
@@ -260,7 +262,7 @@ export const App: React.FC = () => {
                   onDelete={handleDelete}
                   loadingTodoIds={loadingTodoIds}
                   onStatusChange={handleStatusChange}
-                  onTitleUpdate={handleTitleUpdate}
+                  renameCallback={handleTitleUpdate}
                 />
 
                 {!isLoading && tempTodo && (
@@ -269,7 +271,7 @@ export const App: React.FC = () => {
                     isProcessed={true}
                     onDelete={handleDelete}
                     onStatusChange={handleStatusChange}
-                    onTitleUpdate={handleTitleUpdate}
+                    renameCallback={handleTitleUpdate}
                     isTemp={true}
                   />
                 )}

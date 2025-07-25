@@ -8,7 +8,7 @@ type Props = {
   onDelete?: (todoId: number) => void;
   isProcessed?: boolean;
   onStatusChange?: (todoId: number, newStatus: boolean) => void;
-  onTitleUpdate?: (todoId: number, newTitle: string) => void;
+  renameCallback?: (todoId: number, newTitle: string) => void;
   isLoading?: boolean;
   isTemp?: boolean;
 };
@@ -18,7 +18,7 @@ export const TodoItem: React.FC<Props> = ({
   onDelete,
   isProcessed,
   onStatusChange,
-  onTitleUpdate,
+  renameCallback,
   isTemp,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -42,13 +42,10 @@ export const TodoItem: React.FC<Props> = ({
     setIsEditing(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const trimmed = newTitle.trim();
 
     if (!trimmed) {
-      onDelete?.(id);
-      setIsEditing(false);
-
       return;
     }
 
@@ -58,12 +55,21 @@ export const TodoItem: React.FC<Props> = ({
       return;
     }
 
-    onTitleUpdate?.(id, trimmed);
+    await renameCallback?.(id, trimmed);
     setIsEditing(false);
   };
 
   const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
+      const trimmed = newTitle.trim();
+
+      if (!trimmed) {
+        onDelete?.(id);
+        setIsEditing(false);
+
+        return;
+      }
+
       handleSubmit();
     }
 
@@ -96,7 +102,7 @@ export const TodoItem: React.FC<Props> = ({
             const trimmed = newTitle.trim();
 
             if (trimmed && trimmed !== title) {
-              onTitleUpdate?.(id, trimmed);
+              renameCallback?.(id, trimmed);
             }
 
             setNewTitle(title);
