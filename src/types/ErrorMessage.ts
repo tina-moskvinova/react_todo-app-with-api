@@ -4,4 +4,5 @@ export enum ErrorMessage {
   AddTodo = 'Unable to add a todo',
   DeleteTodo = 'Unable to delete a todo',
   UpdateTodo = 'Unable to update a todo',
+  Rename = 'Unable to rename todo',
 }

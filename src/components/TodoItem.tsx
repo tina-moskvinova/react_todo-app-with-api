@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { Todo } from '../types/Todo';
+import { ErrorMessage } from '../types/ErrorMessage';
 
 type Props = {
   todo: Todo;
@@ -23,16 +24,11 @@ export const TodoItem: React.FC<Props> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     setNewTitle(title);
   }, [title]);
-
-  useEffect(() => {
-    if (!isProcessed && isEditing) {
-      setIsEditing(false);
-    }
-  }, [isProcessed, isEditing]);
 
   const handleEdit = () => {
     onStatusChange?.(id, !completed);
@@ -42,35 +38,43 @@ export const TodoItem: React.FC<Props> = ({
     setIsEditing(true);
   };
 
-  const handleSubmit = async () => {
-    const trimmed = newTitle.trim();
-
-    if (!trimmed) {
-      return;
-    }
-
-    if (trimmed === title) {
-      setIsEditing(false);
-
-      return;
-    }
-
-    await renameCallback?.(id, trimmed);
-    setIsEditing(false);
-  };
-
-  const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyUp = async (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       const trimmed = newTitle.trim();
 
       if (!trimmed) {
-        onDelete?.(id);
-        setIsEditing(false);
+        setIsProcessing(true);
+        try {
+          await onDelete?.(id);
+          setIsEditing(false);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(ErrorMessage.DeleteTodo, error);
+        } finally {
+          setIsProcessing(false);
+        }
 
         return;
       }
 
-      handleSubmit();
+      if (trimmed !== title) {
+        setIsProcessing(true);
+        try {
+          await renameCallback?.(id, trimmed);
+          setIsEditing(false);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(ErrorMessage.Rename, error);
+        } finally {
+          setIsProcessing(false);
+        }
+
+        return;
+      }
+
+      setIsEditing(false);
+
+      return;
     }
 
     if (event.key === 'Escape') {
@@ -98,18 +102,44 @@ export const TodoItem: React.FC<Props> = ({
           type="text"
           value={newTitle}
           onChange={e => setNewTitle(e.target.value)}
-          onBlur={() => {
+          onBlur={async () => {
             const trimmed = newTitle.trim();
 
-            if (trimmed && trimmed !== title) {
-              renameCallback?.(id, trimmed);
+            if (!trimmed) {
+              setIsProcessing(true);
+              try {
+                await onDelete?.(id);
+                setIsEditing(false);
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error(ErrorMessage.DeleteTodo, error);
+              } finally {
+                setIsProcessing(false);
+              }
+
+              return;
             }
 
-            setNewTitle(title);
+            if (trimmed !== title) {
+              setIsProcessing(true);
+              try {
+                await renameCallback?.(id, trimmed);
+                setIsEditing(false);
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error(ErrorMessage.Rename, error);
+
+                setIsProcessing(false);
+              }
+
+              return;
+            }
+
             setIsEditing(false);
           }}
           onKeyUp={handleKeyUp}
           autoFocus
+          disabled={isProcessing}
         />
       ) : (
         <span

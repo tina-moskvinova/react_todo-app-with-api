@@ -218,7 +218,29 @@ export const App: React.FC = () => {
     try {
       const updatedTodo = await updateTodoTitle(todoId, trimmed);
 
-      renameCallback?.(todoId, trimmed);
+      setTodos(prev =>
+        prev.map(todo => (todo.id === todoId ? updatedTodo : todo)),
+      );
+    } catch {
+      setErrorMessage(ErrorMessage.UpdateTodo);
+    } finally {
+      setLoadingTodoIds(prev => prev.filter(id => id !== todoId));
+    }
+  };
+
+  const renameCallback = async (todoId: number, newTitle: string) => {
+    const trimmed = newTitle.trim();
+
+    if (!trimmed) {
+      handleDelete(todoId);
+
+      return;
+    }
+
+    setLoadingTodoIds(prev => [...prev, todoId]);
+
+    try {
+      const updatedTodo = await updateTodoTitle(todoId, trimmed);
 
       setTodos(prev =>
         prev.map(todo => (todo.id === todoId ? updatedTodo : todo)),
@@ -262,7 +284,7 @@ export const App: React.FC = () => {
                   onDelete={handleDelete}
                   loadingTodoIds={loadingTodoIds}
                   onStatusChange={handleStatusChange}
-                  renameCallback={handleTitleUpdate}
+                  renameCallback={renameCallback}
                 />
 
                 {!isLoading && tempTodo && (
