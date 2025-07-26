@@ -1,87 +1,96 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import classNames from 'classnames';
 import { Todo } from '../types/Todo';
 import { ErrorMessage } from '../types/ErrorMessage';
 
 type Props = {
   todo: Todo;
-  onDelete?: (todoId: number) => void;
-  isProcessed?: boolean;
+  onDelete?: (todoId: number) => Promise<void>;
   onStatusChange?: (todoId: number, newStatus: boolean) => void;
-  renameCallback?: (todoId: number, newTitle: string) => void;
-  isLoading?: boolean;
+  renameCallback?: (todoId: number, newTitle: string) => Promise<void>;
+  isProcessed?: boolean;
   isTemp?: boolean;
 };
 
 export const TodoItem: React.FC<Props> = ({
   todo: { id, title, completed },
   onDelete,
-  isProcessed,
   onStatusChange,
   renameCallback,
+  isProcessed,
   isTemp,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
   const [isProcessing, setIsProcessing] = useState(false);
+  const isHandling = useRef(false);
 
   useEffect(() => {
     setNewTitle(title);
   }, [title]);
 
-  const handleEdit = () => {
+  const handleEditStatus = () => {
     onStatusChange?.(id, !completed);
   };
 
-  const handleDoubleClick = () => {
-    setIsEditing(true);
-  };
+  const handleRename = async () => {
+    if (isHandling.current) {
+      return;
+    }
 
-  const handleKeyUp = async (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      const trimmed = newTitle.trim();
+    isHandling.current = true;
 
-      if (!trimmed) {
-        setIsProcessing(true);
-        try {
-          await onDelete?.(id);
-          setIsEditing(false);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(ErrorMessage.DeleteTodo, error);
-        } finally {
-          setIsProcessing(false);
-        }
+    const trimmed = newTitle.trim();
 
-        return;
+    if (!trimmed) {
+      setIsProcessing(true);
+      try {
+        await onDelete?.(id);
+        setIsEditing(false);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(ErrorMessage.DeleteTodo, error);
+      } finally {
+        setIsProcessing(false);
+        isHandling.current = false;
       }
-
-      if (trimmed !== title) {
-        setIsProcessing(true);
-        try {
-          await renameCallback?.(id, trimmed);
-          // setIsEditing(false); mentor's recommendation
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(ErrorMessage.Rename, error);
-        } finally {
-          setIsProcessing(false);
-        }
-
-        return;
-      }
-
-      setIsEditing(false);
 
       return;
     }
 
-    if (event.key === 'Escape') {
+    if (trimmed !== title) {
+      setIsProcessing(true);
+      try {
+        await renameCallback?.(id, trimmed);
+        setIsEditing(false);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(ErrorMessage.Rename, error);
+      } finally {
+        setIsProcessing(false);
+        isHandling.current = false;
+      }
+
+      return;
+    }
+
+    setIsEditing(false);
+    isHandling.current = false;
+  };
+
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleRename();
+    }
+
+    if (e.key === 'Escape') {
       setNewTitle(title);
       setIsEditing(false);
     }
   };
+
+  const handleDoubleClick = () => setIsEditing(true);
 
   return (
     <div data-cy="Todo" className={classNames('todo', { completed })}>
@@ -91,7 +100,7 @@ export const TodoItem: React.FC<Props> = ({
           type="checkbox"
           className="todo__status"
           checked={completed}
-          onChange={handleEdit}
+          onChange={handleEditStatus}
         />
       </label>
 
@@ -102,41 +111,8 @@ export const TodoItem: React.FC<Props> = ({
           type="text"
           value={newTitle}
           onChange={e => setNewTitle(e.target.value)}
-          onBlur={async () => {
-            const trimmed = newTitle.trim();
-
-            if (!trimmed) {
-              setIsProcessing(true);
-              try {
-                await onDelete?.(id);
-                setIsEditing(false);
-              } catch (error) {
-                // eslint-disable-next-line no-console
-                console.error(ErrorMessage.DeleteTodo, error);
-              } finally {
-                setIsProcessing(false);
-              }
-
-              return;
-            }
-
-            if (trimmed !== title) {
-              setIsProcessing(true);
-              try {
-                await renameCallback?.(id, trimmed);
-              } catch (error) {
-                // eslint-disable-next-line no-console
-                console.error(ErrorMessage.Rename, error);
-
-                setIsProcessing(false);
-              }
-
-              return;
-            }
-
-            setIsEditing(false);
-          }}
           onKeyUp={handleKeyUp}
+          onBlur={handleRename}
           autoFocus
           disabled={isProcessing}
         />
