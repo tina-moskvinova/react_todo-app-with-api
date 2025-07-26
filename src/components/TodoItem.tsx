@@ -61,7 +61,7 @@ export const TodoItem: React.FC<Props> = ({
         setIsProcessing(true);
         try {
           await renameCallback?.(id, trimmed);
-          setIsEditing(false);
+          // setIsEditing(false); mentor's recommendation
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(ErrorMessage.Rename, error);
@@ -124,7 +124,6 @@ export const TodoItem: React.FC<Props> = ({
               setIsProcessing(true);
               try {
                 await renameCallback?.(id, trimmed);
-                setIsEditing(false);
               } catch (error) {
                 // eslint-disable-next-line no-console
                 console.error(ErrorMessage.Rename, error);
