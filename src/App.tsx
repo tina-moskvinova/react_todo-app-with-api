@@ -117,12 +117,13 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleDelete = async (todoId: number) => {
+  const handleDelete = async (todoId: number, onSuccess?: VoidFunction) => {
     setLoadingTodoIds(prev => [...prev, todoId]);
 
     try {
       await deleteTodoFromServer(todoId);
       setTodos(prev => prev.filter(todo => todo.id !== todoId));
+      onSuccess?.();
     } catch {
       setErrorMessage(ErrorMessage.DeleteTodo);
     } finally {
@@ -228,7 +229,11 @@ export const App: React.FC = () => {
     }
   };
 
-  const renameCallback = async (todoId: number, newTitle: string) => {
+  const renameCallback = async (
+    todoId: number,
+    newTitle: string,
+    onSuccess?: VoidFunction,
+  ) => {
     const trimmed = newTitle.trim();
 
     if (!trimmed) {
@@ -245,6 +250,7 @@ export const App: React.FC = () => {
       setTodos(prev =>
         prev.map(todo => (todo.id === todoId ? updatedTodo : todo)),
       );
+      onSuccess?.();
     } catch {
       setErrorMessage(ErrorMessage.UpdateTodo);
     } finally {

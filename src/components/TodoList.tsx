@@ -4,10 +4,14 @@ import { TodoItem } from '../components/TodoItem';
 
 type Props = {
   todos: Todo[];
-  onDelete: (todoId: number) => void;
+  onDelete: (todoId: number, onSuccess?: VoidFunction) => Promise<void>;
   loadingTodoIds: number[];
   onStatusChange: (todoId: number, newStatus: boolean) => void;
-  renameCallback: (todoId: number, newTitle: string) => Promise<void>;
+  renameCallback: (
+    todoId: number,
+    newTitle: string,
+    onSuccess?: VoidFunction,
+  ) => Promise<void>;
   isTemp?: boolean;
 };
 
